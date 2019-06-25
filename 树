@@ -1,0 +1,131 @@
+# 树
+
+​	树结构是一种数据结构，它由**节点（node）**以及连节点的**边（edge）**构成。
+
+​	如果一棵树具有一个叫为**根(root)**的特殊节点，那么这棵树称作**有根数**（rooted tree）。
+
+​	树结构有如下的定义：
+
+- 没有子节点的节点称为**外部节点（external node）**或**叶节点（leaf）**
+
+- 除叶节点以外的节点称为**内部节点（internal node）**
+
+- 节点x的子节点树称为x的**度（degree）**
+
+- 从根r到节点x的路径长度称为x的**深度（depth）**
+
+- 节点x到叶节点的最大路径长度称为节点x的**高度（height）**
+
+  不难看出，一棵树中根节点的高度最大，称其为树的高。
+
+## 1.有根树的表达
+
+```C++
+#include <iostream>
+using namespace std;
+
+const int MAX = 1000005;
+const int NIL = -1;
+
+struct Node{
+	int p,l,r;
+};
+
+Node T[MAX];
+int n,D[MAX];
+
+int rec(int u,int p)
+{
+	D[u] = p;
+	if(T[u].l!=NIL) rec(T[u].l,p+1);
+	if(T[u].r!=NIL) rec(T[u].r,p);
+}
+
+void print(int u)
+{
+	int i,c;
+	cout<<"node "<<u<<":";
+	cout<<"parent = "<<T[u].p<<", "
+		<<"depth = "<<D[u]<<", ";
+	if(T[u].p == NIL) cout<<"root, ";
+	else if(T[u].l == NIL) cout<<"leaf, ";
+	else cout<<"internal node, ";
+	cout<<"[";
+	for(i = 0,c = T[u].l; c != NIL; i++,c = T[c].r){
+		if(i) cout<<", ";
+		cout<<c;
+	}
+	cout<<"]"<<endl;
+}
+int main()
+{
+	cin>>n;
+	for(int i = 0;i<n;i++){
+		T[i].p=T[i].r=T[i].l = NIL;
+	}
+	for(int i = 0;i<n;i++){
+		int v,d,c,l;
+		cin>>v>>d;
+		for(int j = 0;j<d;j++){
+			cin>>c;
+			if(j==0) T[v].l = c;
+			else T[l].r = c;
+			l = c;
+			T[c].p = v;
+		}
+	}
+	int r;
+	for(int i = 0;i<n;i++){
+		if(T[i].p==NIL) r = i;
+	}
+	rec(r,0);
+	for(int i = 0;i<n;i++){
+		print(i);
+	}
+	return 0;
+}
+/*
+input:
+13
+0 3 1 4 10
+1 2 2 3
+2 0
+3 0
+4 3 5 6 7
+5 0
+6 0
+7 2 8 9
+8 0
+9 0
+10 2 11 12
+11 0
+12 0
+*/
+/*
+output:
+node 0:parent = -1, depth = 0, root, [1, 4, 10]
+node 1:parent = 0, depth = 1, internal node, [2, 3]
+node 2:parent = 1, depth = 2, leaf, []
+node 3:parent = 1, depth = 2, leaf, []
+node 4:parent = 0, depth = 1, internal node, [5, 6, 7]
+node 5:parent = 4, depth = 2, leaf, []
+node 6:parent = 4, depth = 2, leaf, []
+node 7:parent = 4, depth = 2, internal node, [8, 9]
+node 8:parent = 7, depth = 3, leaf, []
+node 9:parent = 7, depth = 3, leaf, []
+node 10:parent = 0, depth = 1, internal node, [11, 12]
+node 11:parent = 10, depth = 2, leaf, []
+node 12:parent = 10, depth = 2, leaf, []
+*/
+```
+
+​	考虑如何存储输入的有根树，可以利用”左子右兄弟表示法“( left-child right-sibling representation)来表示树。
+
+​	表示法中各节点具有如下信息：
+
+- 节点u的父节点
+- 节点u最左侧的子节点
+- 节点u右侧紧邻的兄弟节的子节点
+
+​    引用 u.p 来表示节点 u 的父节点，不存在父节点的就是根。不存在 u.l 就是叶节点，不存在 u.r 的节点为最右侧的子节点。用NIL表示不存在左子节点，右兄弟节点，父节点的节点状态。此时要保证NIL不会作为一般节点编号使用。
+
